@@ -1,27 +1,28 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2023 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2023 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "stdio.h"
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -31,7 +32,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -43,7 +43,45 @@
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+uint8_t RxBuffer[2];
+uint8_t TxBuffer[100];
 
+uint8_t FirstMenu[500] =
+				"|-----------------------------------------------------|\r\n"
+				"|                    Welcome to Menu                  |\r\n"
+				"|               Press the number 1 or 0               |\r\n"
+				"|-----------------------------------------------------|\r\n"
+				"|<<<<<<<<<<<<<<< 0 for LED Control  >>>>>>>>>>>>>>>>>>|\r\n"
+				"|<<<<<<<<<<<<<<< 1 for Check Button >>>>>>>>>>>>>>>>>>|\r\n"
+				"|-----------------------------------------------------|\r\n";
+uint8_t SecondMenu[700] =
+				"|-----------------------------------------------------|\r\n"
+				"|               Welcome to Led control                |\r\n"
+		        "|               Select a,s,d,x for menu               |\r\n"
+				"|-----------------------------------------------------|\r\n"
+				"|                a : Speed +1 Hz                      |\r\n"
+				"|                s : Speed -1 Hz                      |\r\n"
+				"|                d : On / Off                         |\r\n"
+		        "|                x : Go to Menu                       |\r\n"
+				"|-----------------------------------------------------|\r\n";
+
+uint8_t ThirdMenu[300] =
+				"|-----------------------------------------------------|\r\n"
+				"|              Welcome to Check Button                |\r\n"
+				"|         Press 'x' to get back to Menu               |\r\n"
+				"|-----------------------------------------------------|\r\n";
+
+int8_t Hz = 0;
+int8_t PreHz = 0;
+uint16_t Millis = 0;
+uint8_t TextState = 0;
+uint8_t LedStatus = 0;
+uint8_t Button = 0;
+uint8_t PreButton = 0;
+uint8_t Press[20] = "ButtonPressed\r\n";
+uint8_t unPress[20] = "ButtonUnpressed\r\n";
+
+uint8_t OneTimePress = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -52,6 +90,7 @@ static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
+void UARTInterruptConfig();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -90,16 +129,139 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
+	UARTInterruptConfig();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+	while (1) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
+		static uint32_t timestamp = 0;
+		if (HAL_GetTick() > timestamp) {
+
+			if (Hz > 0) {
+				Millis = 500 / Hz;
+			} else {
+				Millis = 0;
+			}
+			timestamp = HAL_GetTick() + Millis;
+
+			if(LedStatus == 0 || Hz == 0){
+				HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, RESET);
+			}
+			else{
+				HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+			}
+		}
+
+		switch (TextState) {
+
+		case 0:
+
+			HAL_UART_Transmit_IT(&huart2, FirstMenu, strlen((char*) FirstMenu));
+			TextState = 1;
+			break;
+		case 1:
+			if(RxBuffer[0] == '0'){
+				RxBuffer[0] = 0;
+				TextState = 2;
+			}
+			else if(RxBuffer[0] == '1'){
+				RxBuffer[0] = 0;
+				TextState = 4;
+			}
+			break;
+
+
+		case 2:
+
+			HAL_UART_Transmit_IT(&huart2, SecondMenu, strlen((char*) SecondMenu));
+			TextState = 3;
+			break;
+		case 3:
+			if (RxBuffer[0] == 'a') {
+				Hz += 1;
+				PreHz += 1;
+
+				sprintf((char*) TxBuffer, " BlinkHz %d\r\n", Hz);
+				HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*) TxBuffer));
+				TextState = 3;
+				RxBuffer[0] = ' ';
+			}
+			else if (RxBuffer[0] == 's') {
+				Hz -= 1;
+				if(Hz <= 0){
+					Hz = 0;
+				}
+				PreHz -= 1;
+				if(PreHz <= 0){
+					PreHz = 0;
+				}
+				sprintf((char*) TxBuffer, " BlinkHz %d\r\n", PreHz);
+				HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*) TxBuffer));
+				TextState = 3;
+				RxBuffer[0] = ' ';
+
+			}
+			else if(RxBuffer[0] == 'd'){
+				if(LedStatus){
+					LedStatus = 0;
+					RxBuffer[0] = ' ';
+					Hz = 0;
+					sprintf((char*) TxBuffer, " LED OFF \r\n");
+					HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*) TxBuffer));
+					HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, SET);
+				}
+				else{
+					LedStatus = 1;
+					RxBuffer[0] = ' ';
+					Hz = PreHz;
+					sprintf((char*) TxBuffer, " LED ON \r\n");
+					HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*) TxBuffer));
+				}
+			}
+			else if(RxBuffer[0] == 'x'){
+				RxBuffer[0] = 0;
+				TextState = 0;
+			}
+			break;
+
+
+		case 4:
+
+			HAL_UART_Transmit_IT(&huart2, ThirdMenu, strlen((char*) ThirdMenu));
+			TextState = 5;
+			break;
+		case 5:
+			Button = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
+			if(Button == 1 && PreButton == 0){
+				HAL_UART_Transmit_IT(&huart2, unPress, strlen((char*) unPress));
+				OneTimePress = 0;
+			}
+			else if(Button == 0 && PreButton == 0){
+				if(!OneTimePress){
+					HAL_UART_Transmit_IT(&huart2, Press, strlen((char*) Press));
+					OneTimePress = 1;
+				}
+			}
+			else if (RxBuffer[0] == 'x'){
+				RxBuffer[0] = 0;
+				TextState = 0;
+			} /*
+			else if(RxBuffer[0] != 0){
+				HAL_Delay(5);
+				HAL_UART_Transmit_IT(&huart2, wrong, strlen((char*) wrong));
+				RxBuffer[0] = 0;
+				TextState = 5;
+			} */
+
+			PreButton = Button;
+			break;
+		}
+
+	}
   /* USER CODE END 3 */
 }
 
@@ -165,7 +327,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 120000;
+  huart2.Init.BaudRate = 230400;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -220,7 +382,20 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void UARTInterruptConfig() {
+	HAL_UART_Receive_IT(&huart2, RxBuffer, 1);
+}
 
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+	if (huart == &huart2) {
+		RxBuffer[1] = '\0';
+
+		sprintf((char*) TxBuffer, "Enter : %s\r\n", RxBuffer);
+		HAL_UART_Transmit(&huart2, TxBuffer, strlen((char*) TxBuffer), 100);
+
+		HAL_UART_Receive_IT(&huart2, RxBuffer, 1);
+	}
+}
 /* USER CODE END 4 */
 
 /**
@@ -230,11 +405,10 @@ static void MX_GPIO_Init(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
+	/* User can add his own implementation to report the HAL error return state */
+	__disable_irq();
+	while (1) {
+	}
   /* USER CODE END Error_Handler_Debug */
 }
 
