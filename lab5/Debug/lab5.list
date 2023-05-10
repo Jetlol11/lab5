@@ -37,13 +37,13 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  16 .debug_macro  00015973  00000000  00000000  0002b528  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   00008c72  00000000  00000000  00040e9b  2**0
+ 17 .debug_line   00008c70  00000000  00000000  00040e9b  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    00085ddc  00000000  00000000  00049b0d  2**0
+ 18 .debug_str    00085dd0  00000000  00000000  00049b0b  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000050  00000000  00000000  000cf8e9  2**0
+ 19 .comment      00000050  00000000  00000000  000cf8db  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00001e98  00000000  00000000  000cf93c  2**2
+ 20 .debug_frame  00001e98  00000000  00000000  000cf92c  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -473,7 +473,7 @@ int main(void)
  80005bc:	f993 3000 	ldrsb.w	r3, [r3]
  80005c0:	2b00      	cmp	r3, #0
  80005c2:	dd0b      	ble.n	80005dc <main+0x48>
-				Millis = 500 / Hz;
+				mils = 500 / Hz;
  80005c4:	4b9c      	ldr	r3, [pc, #624]	; (8000838 <main+0x2a4>)
  80005c6:	f993 3000 	ldrsb.w	r3, [r3]
  80005ca:	461a      	mov	r2, r3
@@ -484,12 +484,12 @@ int main(void)
  80005d8:	801a      	strh	r2, [r3, #0]
  80005da:	e002      	b.n	80005e2 <main+0x4e>
 			} else {
-				Millis = 0;
+				mils = 0;
  80005dc:	4b97      	ldr	r3, [pc, #604]	; (800083c <main+0x2a8>)
  80005de:	2200      	movs	r2, #0
  80005e0:	801a      	strh	r2, [r3, #0]
 			}
-			timestamp = HAL_GetTick() + Millis;
+			timestamp = HAL_GetTick() + mils;
  80005e2:	f000 fc6b 	bl	8000ebc <HAL_GetTick>
  80005e6:	4603      	mov	r3, r0
  80005e8:	4a94      	ldr	r2, [pc, #592]	; (800083c <main+0x2a8>)
@@ -498,7 +498,7 @@ int main(void)
  80005ee:	4a91      	ldr	r2, [pc, #580]	; (8000834 <main+0x2a0>)
  80005f0:	6013      	str	r3, [r2, #0]
 
-			if(LedStatus == 0 || Hz == 0){
+			if(LedNow == 0 || Hz == 0){
  80005f2:	4b93      	ldr	r3, [pc, #588]	; (8000840 <main+0x2ac>)
  80005f4:	781b      	ldrb	r3, [r3, #0]
  80005f6:	2b00      	cmp	r3, #0
@@ -522,7 +522,7 @@ int main(void)
 			}
 		}
 
-		switch (TextState) {
+		switch (PageState) {
  8000618:	4b8b      	ldr	r3, [pc, #556]	; (8000848 <main+0x2b4>)
  800061a:	781b      	ldrb	r3, [r3, #0]
  800061c:	2b05      	cmp	r3, #5
@@ -539,7 +539,7 @@ int main(void)
 
 		case 0:
 
-			HAL_UART_Transmit_IT(&huart2, FirstMenu, strlen((char*) FirstMenu));
+			HAL_UART_Transmit_IT(&huart2, Main, strlen((char*) Main));
  8000640:	4882      	ldr	r0, [pc, #520]	; (800084c <main+0x2b8>)
  8000642:	f7ff fdcd 	bl	80001e0 <strlen>
  8000646:	4603      	mov	r3, r0
@@ -548,7 +548,7 @@ int main(void)
  800064c:	497f      	ldr	r1, [pc, #508]	; (800084c <main+0x2b8>)
  800064e:	4880      	ldr	r0, [pc, #512]	; (8000850 <main+0x2bc>)
  8000650:	f001 fd2b 	bl	80020aa <HAL_UART_Transmit_IT>
-			TextState = 1;
+			PageState = 1;
  8000654:	4b7c      	ldr	r3, [pc, #496]	; (8000848 <main+0x2b4>)
  8000656:	2201      	movs	r2, #1
  8000658:	701a      	strb	r2, [r3, #0]
@@ -564,14 +564,14 @@ int main(void)
  8000664:	4b7b      	ldr	r3, [pc, #492]	; (8000854 <main+0x2c0>)
  8000666:	2200      	movs	r2, #0
  8000668:	701a      	strb	r2, [r3, #0]
-				TextState = 2;
+				PageState = 2;
  800066a:	4b77      	ldr	r3, [pc, #476]	; (8000848 <main+0x2b4>)
  800066c:	2202      	movs	r2, #2
  800066e:	701a      	strb	r2, [r3, #0]
 			}
 			else if(RxBuffer[0] == '1'){
 				RxBuffer[0] = 0;
-				TextState = 4;
+				PageState = 4;
 			}
 			break;
  8000670:	e148      	b.n	8000904 <main+0x370>
@@ -584,7 +584,7 @@ int main(void)
  800067c:	4b75      	ldr	r3, [pc, #468]	; (8000854 <main+0x2c0>)
  800067e:	2200      	movs	r2, #0
  8000680:	701a      	strb	r2, [r3, #0]
-				TextState = 4;
+				PageState = 4;
  8000682:	4b71      	ldr	r3, [pc, #452]	; (8000848 <main+0x2b4>)
  8000684:	2204      	movs	r2, #4
  8000686:	701a      	strb	r2, [r3, #0]
@@ -594,7 +594,7 @@ int main(void)
 
 		case 2:
 
-			HAL_UART_Transmit_IT(&huart2, SecondMenu, strlen((char*) SecondMenu));
+			HAL_UART_Transmit_IT(&huart2, PageLED, strlen((char*) PageLED));
  800068a:	4873      	ldr	r0, [pc, #460]	; (8000858 <main+0x2c4>)
  800068c:	f7ff fda8 	bl	80001e0 <strlen>
  8000690:	4603      	mov	r3, r0
@@ -603,7 +603,7 @@ int main(void)
  8000696:	4970      	ldr	r1, [pc, #448]	; (8000858 <main+0x2c4>)
  8000698:	486d      	ldr	r0, [pc, #436]	; (8000850 <main+0x2bc>)
  800069a:	f001 fd06 	bl	80020aa <HAL_UART_Transmit_IT>
-			TextState = 3;
+			PageState = 3;
  800069e:	4b6a      	ldr	r3, [pc, #424]	; (8000848 <main+0x2b4>)
  80006a0:	2203      	movs	r2, #3
  80006a2:	701a      	strb	r2, [r3, #0]
@@ -624,7 +624,7 @@ int main(void)
  80006ba:	b25a      	sxtb	r2, r3
  80006bc:	4b5e      	ldr	r3, [pc, #376]	; (8000838 <main+0x2a4>)
  80006be:	701a      	strb	r2, [r3, #0]
-				PreHz += 1;
+				BefHz += 1;
  80006c0:	4b66      	ldr	r3, [pc, #408]	; (800085c <main+0x2c8>)
  80006c2:	f993 3000 	ldrsb.w	r3, [r3]
  80006c6:	b2db      	uxtb	r3, r3
@@ -650,7 +650,7 @@ int main(void)
  80006ee:	495d      	ldr	r1, [pc, #372]	; (8000864 <main+0x2d0>)
  80006f0:	4857      	ldr	r0, [pc, #348]	; (8000850 <main+0x2bc>)
  80006f2:	f001 fcda 	bl	80020aa <HAL_UART_Transmit_IT>
-				TextState = 3;
+				PageState = 3;
  80006f6:	4b54      	ldr	r3, [pc, #336]	; (8000848 <main+0x2b4>)
  80006f8:	2203      	movs	r2, #3
  80006fa:	701a      	strb	r2, [r3, #0]
@@ -661,7 +661,7 @@ int main(void)
 			}
 			else if(RxBuffer[0] == 'x'){
 				RxBuffer[0] = 0;
-				TextState = 0;
+				PageState = 0;
 			}
 			break;
  8000702:	e101      	b.n	8000908 <main+0x374>
@@ -688,7 +688,7 @@ int main(void)
  8000728:	4b43      	ldr	r3, [pc, #268]	; (8000838 <main+0x2a4>)
  800072a:	2200      	movs	r2, #0
  800072c:	701a      	strb	r2, [r3, #0]
-				PreHz -= 1;
+				BefHz -= 1;
  800072e:	4b4b      	ldr	r3, [pc, #300]	; (800085c <main+0x2c8>)
  8000730:	f993 3000 	ldrsb.w	r3, [r3]
  8000734:	b2db      	uxtb	r3, r3
@@ -697,16 +697,16 @@ int main(void)
  800073a:	b25a      	sxtb	r2, r3
  800073c:	4b47      	ldr	r3, [pc, #284]	; (800085c <main+0x2c8>)
  800073e:	701a      	strb	r2, [r3, #0]
-				if(PreHz <= 0){
+				if(BefHz <= 0){
  8000740:	4b46      	ldr	r3, [pc, #280]	; (800085c <main+0x2c8>)
  8000742:	f993 3000 	ldrsb.w	r3, [r3]
  8000746:	2b00      	cmp	r3, #0
  8000748:	dc02      	bgt.n	8000750 <main+0x1bc>
-					PreHz = 0;
+					BefHz = 0;
  800074a:	4b44      	ldr	r3, [pc, #272]	; (800085c <main+0x2c8>)
  800074c:	2200      	movs	r2, #0
  800074e:	701a      	strb	r2, [r3, #0]
-				sprintf((char*) TxBuffer, " BlinkHz %d\r\n", PreHz);
+				sprintf((char*) TxBuffer, " BlinkHz %d\r\n", BefHz);
  8000750:	4b42      	ldr	r3, [pc, #264]	; (800085c <main+0x2c8>)
  8000752:	f993 3000 	ldrsb.w	r3, [r3]
  8000756:	461a      	mov	r2, r3
@@ -722,7 +722,7 @@ int main(void)
  800076c:	493d      	ldr	r1, [pc, #244]	; (8000864 <main+0x2d0>)
  800076e:	4838      	ldr	r0, [pc, #224]	; (8000850 <main+0x2bc>)
  8000770:	f001 fc9b 	bl	80020aa <HAL_UART_Transmit_IT>
-				TextState = 3;
+				PageState = 3;
  8000774:	4b34      	ldr	r3, [pc, #208]	; (8000848 <main+0x2b4>)
  8000776:	2203      	movs	r2, #3
  8000778:	701a      	strb	r2, [r3, #0]
@@ -737,12 +737,12 @@ int main(void)
  8000784:	781b      	ldrb	r3, [r3, #0]
  8000786:	2b64      	cmp	r3, #100	; 0x64
  8000788:	d13a      	bne.n	8000800 <main+0x26c>
-				if(LedStatus){
+				if(LedNow){
  800078a:	4b2d      	ldr	r3, [pc, #180]	; (8000840 <main+0x2ac>)
  800078c:	781b      	ldrb	r3, [r3, #0]
  800078e:	2b00      	cmp	r3, #0
  8000790:	d01c      	beq.n	80007cc <main+0x238>
-					LedStatus = 0;
+					LedNow = 0;
  8000792:	4b2b      	ldr	r3, [pc, #172]	; (8000840 <main+0x2ac>)
  8000794:	2200      	movs	r2, #0
  8000796:	701a      	strb	r2, [r3, #0]
@@ -774,7 +774,7 @@ int main(void)
  80007c6:	f000 fec5 	bl	8001554 <HAL_GPIO_WritePin>
 			break;
  80007ca:	e09d      	b.n	8000908 <main+0x374>
-					LedStatus = 1;
+					LedNow = 1;
  80007cc:	4b1c      	ldr	r3, [pc, #112]	; (8000840 <main+0x2ac>)
  80007ce:	2201      	movs	r2, #1
  80007d0:	701a      	strb	r2, [r3, #0]
@@ -782,7 +782,7 @@ int main(void)
  80007d2:	4b20      	ldr	r3, [pc, #128]	; (8000854 <main+0x2c0>)
  80007d4:	2220      	movs	r2, #32
  80007d6:	701a      	strb	r2, [r3, #0]
-					Hz = PreHz;
+					Hz = BefHz;
  80007d8:	4b20      	ldr	r3, [pc, #128]	; (800085c <main+0x2c8>)
  80007da:	f993 2000 	ldrsb.w	r2, [r3]
  80007de:	4b16      	ldr	r3, [pc, #88]	; (8000838 <main+0x2a4>)
@@ -811,7 +811,7 @@ int main(void)
  8000808:	4b12      	ldr	r3, [pc, #72]	; (8000854 <main+0x2c0>)
  800080a:	2200      	movs	r2, #0
  800080c:	701a      	strb	r2, [r3, #0]
-				TextState = 0;
+				PageState = 0;
  800080e:	4b0e      	ldr	r3, [pc, #56]	; (8000848 <main+0x2b4>)
  8000810:	2200      	movs	r2, #0
  8000812:	701a      	strb	r2, [r3, #0]
@@ -821,7 +821,7 @@ int main(void)
 
 		case 4:
 
-			HAL_UART_Transmit_IT(&huart2, ThirdMenu, strlen((char*) ThirdMenu));
+			HAL_UART_Transmit_IT(&huart2, PageButton, strlen((char*) PageButton));
  8000816:	4816      	ldr	r0, [pc, #88]	; (8000870 <main+0x2dc>)
  8000818:	f7ff fce2 	bl	80001e0 <strlen>
  800081c:	4603      	mov	r3, r0
@@ -830,7 +830,7 @@ int main(void)
  8000822:	4913      	ldr	r1, [pc, #76]	; (8000870 <main+0x2dc>)
  8000824:	480a      	ldr	r0, [pc, #40]	; (8000850 <main+0x2bc>)
  8000826:	f001 fc40 	bl	80020aa <HAL_UART_Transmit_IT>
-			TextState = 5;
+			PageState = 5;
  800082a:	4b07      	ldr	r3, [pc, #28]	; (8000848 <main+0x2b4>)
  800082c:	2205      	movs	r2, #5
  800082e:	701a      	strb	r2, [r3, #0]
@@ -926,13 +926,13 @@ int main(void)
  80008ee:	4b0e      	ldr	r3, [pc, #56]	; (8000928 <main+0x394>)
  80008f0:	2200      	movs	r2, #0
  80008f2:	701a      	strb	r2, [r3, #0]
-				TextState = 0;
+				PageState = 0;
  80008f4:	4b0d      	ldr	r3, [pc, #52]	; (800092c <main+0x398>)
  80008f6:	2200      	movs	r2, #0
  80008f8:	701a      	strb	r2, [r3, #0]
 				HAL_UART_Transmit_IT(&huart2, wrong, strlen((char*) wrong));
 				RxBuffer[0] = 0;
-				TextState = 5;
+				PageState = 5;
 			} */
 
 			PreButton = Button;

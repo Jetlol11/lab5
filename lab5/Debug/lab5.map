@@ -2895,15 +2895,13 @@ LOAD c:/st/stm32cubeide_1.12.0/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.ext
                 0x0000000020000000                _sdata = .
  *(.data)
  *(.data*)
- .data.FirstMenu
-                0x0000000020000000      0x1f4 ./Core/Src/main.o
-                0x0000000020000000                FirstMenu
- .data.SecondMenu
-                0x00000000200001f4      0x2bc ./Core/Src/main.o
-                0x00000000200001f4                SecondMenu
- .data.ThirdMenu
+ .data.Main     0x0000000020000000      0x1f4 ./Core/Src/main.o
+                0x0000000020000000                Main
+ .data.PageLED  0x00000000200001f4      0x2bc ./Core/Src/main.o
+                0x00000000200001f4                PageLED
+ .data.PageButton
                 0x00000000200004b0      0x12c ./Core/Src/main.o
-                0x00000000200004b0                ThirdMenu
+                0x00000000200004b0                PageButton
  .data.Press    0x00000000200005dc       0x14 ./Core/Src/main.o
                 0x00000000200005dc                Press
  .data.unPress  0x00000000200005f0       0x14 ./Core/Src/main.o
@@ -2947,16 +2945,15 @@ LOAD c:/st/stm32cubeide_1.12.0/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.ext
                 0x00000000200006d8                TxBuffer
  .bss.Hz        0x000000002000073c        0x1 ./Core/Src/main.o
                 0x000000002000073c                Hz
- .bss.PreHz     0x000000002000073d        0x1 ./Core/Src/main.o
-                0x000000002000073d                PreHz
- .bss.Millis    0x000000002000073e        0x2 ./Core/Src/main.o
-                0x000000002000073e                Millis
- .bss.TextState
+ .bss.BefHz     0x000000002000073d        0x1 ./Core/Src/main.o
+                0x000000002000073d                BefHz
+ .bss.mils      0x000000002000073e        0x2 ./Core/Src/main.o
+                0x000000002000073e                mils
+ .bss.PageState
                 0x0000000020000740        0x1 ./Core/Src/main.o
-                0x0000000020000740                TextState
- .bss.LedStatus
-                0x0000000020000741        0x1 ./Core/Src/main.o
-                0x0000000020000741                LedStatus
+                0x0000000020000740                PageState
+ .bss.LedNow    0x0000000020000741        0x1 ./Core/Src/main.o
+                0x0000000020000741                LedNow
  .bss.Button    0x0000000020000742        0x1 ./Core/Src/main.o
                 0x0000000020000742                Button
  .bss.PreButton
@@ -3238,44 +3235,44 @@ LOAD c:/st/stm32cubeide_1.12.0/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.ext
  .debug_macro   0x00000000000155da      0x1de ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.o
  .debug_macro   0x00000000000157b8      0x1bb ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.o
 
-.debug_line     0x0000000000000000     0x8c72
- .debug_line    0x0000000000000000      0xb4a ./Core/Src/main.o
- .debug_line    0x0000000000000b4a      0x6e3 ./Core/Src/stm32f4xx_hal_msp.o
- .debug_line    0x000000000000122d      0x76d ./Core/Src/stm32f4xx_it.o
- .debug_line    0x000000000000199a      0x4f4 ./Core/Src/sysmem.o
- .debug_line    0x0000000000001e8e      0x714 ./Core/Src/system_stm32f4xx.o
- .debug_line    0x00000000000025a2       0x88 ./Core/Startup/startup_stm32f411retx.o
- .debug_line    0x000000000000262a      0x97a ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
- .debug_line    0x0000000000002fa4      0xc29 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o
- .debug_line    0x0000000000003bcd      0xede ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.o
- .debug_line    0x0000000000004aab      0xab2 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.o
- .debug_line    0x000000000000555d      0xcf6 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.o
- .debug_line    0x0000000000006253     0x2a1f ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.o
+.debug_line     0x0000000000000000     0x8c70
+ .debug_line    0x0000000000000000      0xb48 ./Core/Src/main.o
+ .debug_line    0x0000000000000b48      0x6e3 ./Core/Src/stm32f4xx_hal_msp.o
+ .debug_line    0x000000000000122b      0x76d ./Core/Src/stm32f4xx_it.o
+ .debug_line    0x0000000000001998      0x4f4 ./Core/Src/sysmem.o
+ .debug_line    0x0000000000001e8c      0x714 ./Core/Src/system_stm32f4xx.o
+ .debug_line    0x00000000000025a0       0x88 ./Core/Startup/startup_stm32f411retx.o
+ .debug_line    0x0000000000002628      0x97a ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
+ .debug_line    0x0000000000002fa2      0xc29 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o
+ .debug_line    0x0000000000003bcb      0xede ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.o
+ .debug_line    0x0000000000004aa9      0xab2 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.o
+ .debug_line    0x000000000000555b      0xcf6 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.o
+ .debug_line    0x0000000000006251     0x2a1f ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.o
 
-.debug_str      0x0000000000000000    0x85ddc
- .debug_str     0x0000000000000000    0x83d9e ./Core/Src/main.o
-                                      0x84095 (size before relaxing)
- .debug_str     0x0000000000083d9e      0x44f ./Core/Src/stm32f4xx_hal_msp.o
+.debug_str      0x0000000000000000    0x85dd0
+ .debug_str     0x0000000000000000    0x83d92 ./Core/Src/main.o
+                                      0x84089 (size before relaxing)
+ .debug_str     0x0000000000083d92      0x44f ./Core/Src/stm32f4xx_hal_msp.o
                                       0x80396 (size before relaxing)
- .debug_str     0x00000000000841ed       0xef ./Core/Src/stm32f4xx_it.o
+ .debug_str     0x00000000000841e1       0xef ./Core/Src/stm32f4xx_it.o
                                       0x7fea2 (size before relaxing)
- .debug_str     0x00000000000842dc      0x4da ./Core/Src/sysmem.o
+ .debug_str     0x00000000000842d0      0x4da ./Core/Src/sysmem.o
                                        0x5da3 (size before relaxing)
- .debug_str     0x00000000000847b6       0xdb ./Core/Src/system_stm32f4xx.o
+ .debug_str     0x00000000000847aa       0xdb ./Core/Src/system_stm32f4xx.o
                                       0x7fa30 (size before relaxing)
- .debug_str     0x0000000000084891       0x36 ./Core/Startup/startup_stm32f411retx.o
+ .debug_str     0x0000000000084885       0x36 ./Core/Startup/startup_stm32f411retx.o
                                          0x4d (size before relaxing)
- .debug_str     0x00000000000848c7      0x5ee ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
+ .debug_str     0x00000000000848bb      0x5ee ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
                                       0x8045c (size before relaxing)
- .debug_str     0x0000000000084eb5      0x32d ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o
+ .debug_str     0x0000000000084ea9      0x32d ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o
                                       0x8017d (size before relaxing)
- .debug_str     0x00000000000851e2      0x328 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.o
+ .debug_str     0x00000000000851d6      0x328 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.o
                                       0x7fe38 (size before relaxing)
- .debug_str     0x000000000008550a       0xfd ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.o
+ .debug_str     0x00000000000854fe       0xfd ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.o
                                       0x7fbab (size before relaxing)
- .debug_str     0x0000000000085607      0x233 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.o
+ .debug_str     0x00000000000855fb      0x233 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.o
                                       0x7fe64 (size before relaxing)
- .debug_str     0x000000000008583a      0x5a2 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.o
+ .debug_str     0x000000000008582e      0x5a2 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.o
                                       0x803f1 (size before relaxing)
 
 .comment        0x0000000000000000       0x50

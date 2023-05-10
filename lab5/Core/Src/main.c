@@ -46,7 +46,7 @@ UART_HandleTypeDef huart2;
 uint8_t RxBuffer[2];
 uint8_t TxBuffer[100];
 
-uint8_t FirstMenu[500] =
+uint8_t Main[500] =
 				"|-----------------------------------------------------|\r\n"
 				"|                    Welcome to Menu                  |\r\n"
 				"|               Press the number 1 or 0               |\r\n"
@@ -54,7 +54,7 @@ uint8_t FirstMenu[500] =
 				"|<<<<<<<<<<<<<<< 0 for LED Control  >>>>>>>>>>>>>>>>>>|\r\n"
 				"|<<<<<<<<<<<<<<< 1 for Check Button >>>>>>>>>>>>>>>>>>|\r\n"
 				"|-----------------------------------------------------|\r\n";
-uint8_t SecondMenu[700] =
+uint8_t PageLED[700] =
 				"|-----------------------------------------------------|\r\n"
 				"|               Welcome to Led control                |\r\n"
 		        "|               Select a,s,d,x for menu               |\r\n"
@@ -65,17 +65,17 @@ uint8_t SecondMenu[700] =
 		        "|                x : Go to Menu                       |\r\n"
 				"|-----------------------------------------------------|\r\n";
 
-uint8_t ThirdMenu[300] =
+uint8_t PageButton[300] =
 				"|-----------------------------------------------------|\r\n"
 				"|              Welcome to Check Button                |\r\n"
 				"|         Press 'x' to get back to Menu               |\r\n"
 				"|-----------------------------------------------------|\r\n";
 
 int8_t Hz = 0;
-int8_t PreHz = 0;
-uint16_t Millis = 0;
-uint8_t TextState = 0;
-uint8_t LedStatus = 0;
+int8_t BefHz = 0;
+uint16_t mils = 0;
+uint8_t PageState = 0;
+uint8_t LedNow = 0;
 uint8_t Button = 0;
 uint8_t PreButton = 0;
 uint8_t Press[20] = "ButtonPressed\r\n";
@@ -142,13 +142,13 @@ int main(void)
 		if (HAL_GetTick() > timestamp) {
 
 			if (Hz > 0) {
-				Millis = 500 / Hz;
+				mils = 500 / Hz;
 			} else {
-				Millis = 0;
+				mils = 0;
 			}
-			timestamp = HAL_GetTick() + Millis;
+			timestamp = HAL_GetTick() + mils;
 
-			if(LedStatus == 0 || Hz == 0){
+			if(LedNow == 0 || Hz == 0){
 				HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, RESET);
 			}
 			else{
@@ -156,38 +156,38 @@ int main(void)
 			}
 		}
 
-		switch (TextState) {
+		switch (PageState) {
 
 		case 0:
 
-			HAL_UART_Transmit_IT(&huart2, FirstMenu, strlen((char*) FirstMenu));
-			TextState = 1;
+			HAL_UART_Transmit_IT(&huart2, Main, strlen((char*) Main));
+			PageState = 1;
 			break;
 		case 1:
 			if(RxBuffer[0] == '0'){
 				RxBuffer[0] = 0;
-				TextState = 2;
+				PageState = 2;
 			}
 			else if(RxBuffer[0] == '1'){
 				RxBuffer[0] = 0;
-				TextState = 4;
+				PageState = 4;
 			}
 			break;
 
 
 		case 2:
 
-			HAL_UART_Transmit_IT(&huart2, SecondMenu, strlen((char*) SecondMenu));
-			TextState = 3;
+			HAL_UART_Transmit_IT(&huart2, PageLED, strlen((char*) PageLED));
+			PageState = 3;
 			break;
 		case 3:
 			if (RxBuffer[0] == 'a') {
 				Hz += 1;
-				PreHz += 1;
+				BefHz += 1;
 
 				sprintf((char*) TxBuffer, " BlinkHz %d\r\n", Hz);
 				HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*) TxBuffer));
-				TextState = 3;
+				PageState = 3;
 				RxBuffer[0] = ' ';
 			}
 			else if (RxBuffer[0] == 's') {
@@ -195,19 +195,19 @@ int main(void)
 				if(Hz <= 0){
 					Hz = 0;
 				}
-				PreHz -= 1;
-				if(PreHz <= 0){
-					PreHz = 0;
+				BefHz -= 1;
+				if(BefHz <= 0){
+					BefHz = 0;
 				}
-				sprintf((char*) TxBuffer, " BlinkHz %d\r\n", PreHz);
+				sprintf((char*) TxBuffer, " BlinkHz %d\r\n", BefHz);
 				HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*) TxBuffer));
-				TextState = 3;
+				PageState = 3;
 				RxBuffer[0] = ' ';
 
 			}
 			else if(RxBuffer[0] == 'd'){
-				if(LedStatus){
-					LedStatus = 0;
+				if(LedNow){
+					LedNow = 0;
 					RxBuffer[0] = ' ';
 					Hz = 0;
 					sprintf((char*) TxBuffer, " LED OFF \r\n");
@@ -215,24 +215,24 @@ int main(void)
 					HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, SET);
 				}
 				else{
-					LedStatus = 1;
+					LedNow = 1;
 					RxBuffer[0] = ' ';
-					Hz = PreHz;
+					Hz = BefHz;
 					sprintf((char*) TxBuffer, " LED ON \r\n");
 					HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*) TxBuffer));
 				}
 			}
 			else if(RxBuffer[0] == 'x'){
 				RxBuffer[0] = 0;
-				TextState = 0;
+				PageState = 0;
 			}
 			break;
 
 
 		case 4:
 
-			HAL_UART_Transmit_IT(&huart2, ThirdMenu, strlen((char*) ThirdMenu));
-			TextState = 5;
+			HAL_UART_Transmit_IT(&huart2, PageButton, strlen((char*) PageButton));
+			PageState = 5;
 			break;
 		case 5:
 			Button = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
@@ -248,13 +248,13 @@ int main(void)
 			}
 			else if (RxBuffer[0] == 'x'){
 				RxBuffer[0] = 0;
-				TextState = 0;
+				PageState = 0;
 			} /*
 			else if(RxBuffer[0] != 0){
 				HAL_Delay(5);
 				HAL_UART_Transmit_IT(&huart2, wrong, strlen((char*) wrong));
 				RxBuffer[0] = 0;
-				TextState = 5;
+				PageState = 5;
 			} */
 
 			PreButton = Button;
