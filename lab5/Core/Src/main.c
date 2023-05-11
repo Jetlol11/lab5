@@ -44,8 +44,8 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 uint8_t RxBuffer[2];
+uint8_t c=0;
 uint8_t TxBuffer[100];
-
 uint8_t Main[500] =
 				"|-----------------------------------------------------|\r\n"
 				"|                    Welcome to Menu                  |\r\n"
@@ -164,100 +164,116 @@ int main(void)
 			PageState = 1;
 			break;
 		case 1:
-			if(RxBuffer[0] == '0'){
-				RxBuffer[0] = 0;
-				PageState = 2;
-			}
-			else if(RxBuffer[0] == '1'){
-				RxBuffer[0] = 0;
-				PageState = 4;
+			if (c==1) {
+				if(RxBuffer[0] == '0'){
+								RxBuffer[0] = 0;
+								PageState = 2;
+							}
+							else if(RxBuffer[0] == '1'){
+								RxBuffer[0] = 0;
+								PageState = 4;
+							}
+							else if (RxBuffer[0] != ' ' ){
+								sprintf((char*) TxBuffer, " Wrong \r\n");
+								HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*) TxBuffer));
+								RxBuffer[0] = ' ';
+								PageState=0;
+							}
+				c=0;
 			}
 			break;
-
-
 		case 2:
 
 			HAL_UART_Transmit_IT(&huart2, PageLED, strlen((char*) PageLED));
 			PageState = 3;
 			break;
 		case 3:
-			if (RxBuffer[0] == 'a') {
-				Hz += 1;
-				BefHz += 1;
+			if ( c == 1) {
+				if (RxBuffer[0] == 'a') {
+								Hz += 1;
+								BefHz += 1;
 
-				sprintf((char*) TxBuffer, " BlinkHz %d\r\n", Hz);
-				HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*) TxBuffer));
-				PageState = 3;
-				RxBuffer[0] = ' ';
-			}
-			else if (RxBuffer[0] == 's') {
-				Hz -= 1;
-				if(Hz <= 0){
-					Hz = 0;
-				}
-				BefHz -= 1;
-				if(BefHz <= 0){
-					BefHz = 0;
-				}
-				sprintf((char*) TxBuffer, " BlinkHz %d\r\n", BefHz);
-				HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*) TxBuffer));
-				PageState = 3;
-				RxBuffer[0] = ' ';
+								sprintf((char*) TxBuffer, " BlinkHz %d\r\n", Hz);
+								HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*) TxBuffer));
+								PageState = 3;
+								RxBuffer[0] = ' ';
+							}
+							else if (RxBuffer[0] == 's') {
+								Hz -= 1;
+								if(Hz <= 0){
+									Hz = 0;
+								}
+								BefHz -= 1;
+								if(BefHz <= 0){
+									BefHz = 0;
+								}
+								sprintf((char*) TxBuffer, " BlinkHz %d\r\n", BefHz);
+								HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*) TxBuffer));
+								PageState = 3;
+								RxBuffer[0] = ' ';
 
-			}
-			else if(RxBuffer[0] == 'd'){
-				if(LedNow){
-					LedNow = 0;
-					RxBuffer[0] = ' ';
-					Hz = 0;
-					sprintf((char*) TxBuffer, " LED OFF \r\n");
-					HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*) TxBuffer));
-					HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, SET);
-				}
-				else{
-					LedNow = 1;
-					RxBuffer[0] = ' ';
-					Hz = BefHz;
-					sprintf((char*) TxBuffer, " LED ON \r\n");
-					HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*) TxBuffer));
-				}
-			}
-			else if(RxBuffer[0] == 'x'){
-				RxBuffer[0] = 0;
-				PageState = 0;
+							}
+							else if(RxBuffer[0] == 'd'){
+								if(LedNow){
+									LedNow = 0;
+									RxBuffer[0] = ' ';
+									Hz = 0;
+									sprintf((char*) TxBuffer, " LED OFF \r\n");
+									HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*) TxBuffer));
+									HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, SET);
+								}
+								else{
+									LedNow = 1;
+									RxBuffer[0] = ' ';
+									Hz = BefHz;
+									sprintf((char*) TxBuffer, " LED ON \r\n");
+									HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*) TxBuffer));
+								}
+							}
+							else if(RxBuffer[0] == 'x'){
+								RxBuffer[0] = 0;
+								PageState = 0;
+							}
+							else if (RxBuffer[0] != ' ' ){
+								sprintf((char*) TxBuffer, " Wrong \r\n");
+								HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*) TxBuffer));
+								RxBuffer[0] = ' ';
+								PageState=2;
+							}
+				c=0;
 			}
 			break;
-
-
 		case 4:
-
 			HAL_UART_Transmit_IT(&huart2, PageButton, strlen((char*) PageButton));
 			PageState = 5;
 			break;
 		case 5:
-			Button = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
-			if(Button == 1 && PreButton == 0){
-				HAL_UART_Transmit_IT(&huart2, unPress, strlen((char*) unPress));
-				OneTimePress = 0;
-			}
-			else if(Button == 0 && PreButton == 0){
-				if(!OneTimePress){
-					HAL_UART_Transmit_IT(&huart2, Press, strlen((char*) Press));
-					OneTimePress = 1;
-				}
-			}
-			else if (RxBuffer[0] == 'x'){
-				RxBuffer[0] = 0;
-				PageState = 0;
-			} /*
-			else if(RxBuffer[0] != 0){
-				HAL_Delay(5);
-				HAL_UART_Transmit_IT(&huart2, wrong, strlen((char*) wrong));
-				RxBuffer[0] = 0;
-				PageState = 5;
-			} */
+			if (c==1) {
+				Button = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
+							if(Button == 1 && PreButton == 0){
+								HAL_UART_Transmit_IT(&huart2, unPress, strlen((char*) unPress));
+								OneTimePress = 0;
+							}
+							else if(Button == 0 && PreButton == 0){
+								if(!OneTimePress){
+									HAL_UART_Transmit_IT(&huart2, Press, strlen((char*) Press));
+									OneTimePress = 1;
+								}
+							}
+							else if (RxBuffer[0] == 'x'){
+								RxBuffer[0] = 0;
+								PageState = 0;
+							}
+							else if (RxBuffer[0] != ' ' ){
+								sprintf((char*) TxBuffer, " Wrongbutton  \r\n");
+								HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*) TxBuffer));
+								RxBuffer[0] = ' ';
+								PageState=4;
 
-			PreButton = Button;
+							}
+							PreButton = Button;
+			}
+			c=0;
 			break;
 		}
 
@@ -394,6 +410,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		HAL_UART_Transmit(&huart2, TxBuffer, strlen((char*) TxBuffer), 100);
 
 		HAL_UART_Receive_IT(&huart2, RxBuffer, 1);
+		c=1;
 	}
 }
 /* USER CODE END 4 */
